@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using UserManagement.Models;
 using UserManagement.Services.Domain.Interfaces;
@@ -80,9 +81,28 @@ public class UserControllerTests
             .Which.ViewName.Should().Be("Error");
     }
 
+    [Fact]
+    public void List_ShouldIncludeDateOfBirthInViewModel()
+    {
+        // Arrange
+        var controller = CreateController();
+        var expectedDate = new DateTime(1990, 1, 1);
+        SetupUsers(dateOfBirth: expectedDate);
+
+        // Act
+        var result = controller.List() as ViewResult;
+
+        // Assert
+        result.Should().NotBeNull();
+        var model = result!.Model as UserListViewModel;
+        model.Should().NotBeNull();
+        model!.Items.Should().ContainSingle();
+        model.Items.First().DateOfBirth.Should().Be(expectedDate);
+    }
 
 
-    private User[] SetupUsers(string forename = "Johnny", string surname = "User", string email = "juser@example.com", bool isActive = true)
+
+    private User[] SetupUsers(string forename = "Johnny", string surname = "User", string email = "juser@example.com", bool isActive = true, DateTime? dateOfBirth = null)
     {
         var users = new[]
         {
@@ -91,7 +111,8 @@ public class UserControllerTests
                 Forename = forename,
                 Surname = surname,
                 Email = email,
-                IsActive = isActive
+                IsActive = isActive,
+                DateOfBirth = dateOfBirth ?? DateTime.Now.AddYears(-30)
             }
         };
 
@@ -106,8 +127,8 @@ public class UserControllerTests
     {
         var users = new[]
         {
-            new User { Forename = "Active", Surname = "User", Email = "active@example.com", IsActive = isActive },
-            new User { Forename = "Another", Surname = "User", Email = "another@example.com", IsActive = isActive }
+            new User { Forename = "Active", Surname = "User", Email = "active@example.com", IsActive = isActive, DateOfBirth = DateTime.Now.AddYears(-30)},
+            new User { Forename = "Another", Surname = "User", Email = "another@example.com", IsActive = isActive, DateOfBirth = DateTime.Now.AddYears(-30)}
         };
 
         _userService
