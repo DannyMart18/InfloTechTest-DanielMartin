@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using UserManagement.Models;
 using UserManagement.Services.Domain.Implementations;
@@ -20,6 +21,53 @@ public class UserServiceTests
         result.Should().BeSameAs(users);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void FilterByActive_WhenCalled_ReturnsCorrectUsers(bool isActive)
+    {
+        // Arrange
+        var service = CreateService();
+        var users = SetupMixedUsers();
+
+        // Act
+        var result = service.FilterByActive(isActive);
+
+        // Assert
+        result.Should().AllSatisfy(user => user.IsActive.Should().Be(isActive));
+        result.Should().BeEquivalentTo(users.Where(u => u.IsActive == isActive));
+    }
+
+    [Fact]
+    public void FilterByActive_WhenNoUsersMatch_ReturnsEmptyList()
+    {
+        // Arrange
+        var service = CreateService();
+        SetupAllInactiveUsers();
+
+        // Act
+        var result = service.FilterByActive(true);
+
+        // Assert
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void GetAll_WhenContextThrowsException_ShouldThrowException()
+    {
+        // Arrange
+        _dataContext
+            .Setup(s => s.GetAll<User>())
+            .Throws(new Exception("Database error"));
+
+        var service = CreateService();
+
+        // Act & Assert
+        service.Invoking(s => s.GetAll())
+            .Should().Throw<Exception>()
+            .WithMessage("Database error");
+    }
+
     private IQueryable<User> SetupUsers(string forename = "Johnny", string surname = "User", string email = "juser@example.com", bool isActive = true)
     {
         var users = new[]
@@ -39,6 +87,38 @@ public class UserServiceTests
 
         return users;
     }
+
+    private IQueryable<User> SetupMixedUsers()
+    {
+        var users = new[]
+        {
+            new User { Forename = "Active", Surname = "User", Email = "active@example.com", IsActive = true },
+            new User { Forename = "Inactive", Surname = "User", Email = "inactive@example.com", IsActive = false },
+            new User { Forename = "Another", Surname = "Active", Email = "another@example.com", IsActive = true }
+        }.AsQueryable();
+
+        _dataContext
+            .Setup(s => s.GetAll<User>())
+            .Returns(users);
+
+        return users;
+    }
+
+    private IQueryable<User> SetupAllInactiveUsers()
+    {
+        var users = new[]
+        {
+            new User { Forename = "Inactive", Surname = "User1", Email = "inactive1@example.com", IsActive = false },
+            new User { Forename = "Inactive", Surname = "User2", Email = "inactive2@example.com", IsActive = false },
+        }.AsQueryable();
+
+        _dataContext
+            .Setup(s => s.GetAll<User>())
+            .Returns(users);
+
+        return users;
+    }
+
 
     private readonly Mock<IDataContext> _dataContext = new();
     private UserService CreateService() => new(_dataContext.Object);
