@@ -68,7 +68,23 @@ public class UserServiceTests
             .WithMessage("Database error");
     }
 
-    private IQueryable<User> SetupUsers(string forename = "Johnny", string surname = "User", string email = "juser@example.com", bool isActive = true)
+    [Fact]
+    public void GetAll_ShouldIncludeDateOfBirth()
+    {
+        // Arrange
+        var service = CreateService();
+        var expectedDate = new DateTime(1990, 1, 1);
+        SetupUsers(dateOfBirth: expectedDate);
+
+        // Act
+        var result = service.GetAll();
+
+        // Assert
+        result.Should().ContainSingle();
+        result.First().DateOfBirth.Should().Be(expectedDate);
+    }
+
+    private IQueryable<User> SetupUsers(string forename = "Johnny", string surname = "User", string email = "juser@example.com", bool isActive = true, DateTime? dateOfBirth = null)
     {
         var users = new[]
         {
@@ -77,7 +93,8 @@ public class UserServiceTests
                 Forename = forename,
                 Surname = surname,
                 Email = email,
-                IsActive = isActive
+                IsActive = isActive,
+                DateOfBirth = dateOfBirth ?? DateTime.Now.AddYears(-30)
             }
         }.AsQueryable();
 
@@ -92,9 +109,9 @@ public class UserServiceTests
     {
         var users = new[]
         {
-            new User { Forename = "Active", Surname = "User", Email = "active@example.com", IsActive = true },
-            new User { Forename = "Inactive", Surname = "User", Email = "inactive@example.com", IsActive = false },
-            new User { Forename = "Another", Surname = "Active", Email = "another@example.com", IsActive = true }
+            new User { Forename = "Active", Surname = "User", Email = "active@example.com", IsActive = true, DateOfBirth = DateTime.Now.AddYears(-30) },
+            new User { Forename = "Inactive", Surname = "User", Email = "inactive@example.com", IsActive = false, DateOfBirth = DateTime.Now.AddYears(-30) },
+            new User { Forename = "Another", Surname = "Active", Email = "another@example.com", IsActive = true, DateOfBirth = DateTime.Now.AddYears(-30) }
         }.AsQueryable();
 
         _dataContext
@@ -108,8 +125,8 @@ public class UserServiceTests
     {
         var users = new[]
         {
-            new User { Forename = "Inactive", Surname = "User1", Email = "inactive1@example.com", IsActive = false },
-            new User { Forename = "Inactive", Surname = "User2", Email = "inactive2@example.com", IsActive = false },
+            new User { Forename = "Inactive", Surname = "User1", Email = "inactive1@example.com", IsActive = false, DateOfBirth = DateTime.Now.AddYears(-30) },
+            new User { Forename = "Inactive", Surname = "User2", Email = "inactive2@example.com", IsActive = false, DateOfBirth = DateTime.Now.AddYears(-30) },
         }.AsQueryable();
 
         _dataContext
