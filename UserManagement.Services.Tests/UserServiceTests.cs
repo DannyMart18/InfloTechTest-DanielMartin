@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using UserManagement.Models;
 using UserManagement.Services.Domain.Implementations;
+using UserManagement.Services.Exceptions;
 
 namespace UserManagement.Data.Tests;
 
@@ -135,6 +136,92 @@ public class UserServiceTests
 
         return users;
     }
+
+    [Fact]
+    public void Create_WhenValidUser_ShouldCallDataContextCreate()
+    {
+        // Arrange
+        var service = CreateService();
+        var user = new User { Forename = "New", Surname = "User", Email = "newuser@example.com", DateOfBirth = DateTime.Now.AddYears(-25), IsActive = true };
+
+        // Act
+        service.Create(user);
+
+        // Assert
+        _dataContext.Verify(dc => dc.Create(It.Is<User>(u => u.Email == user.Email)), Times.Once);
+    }
+
+    [Fact]
+    public void GetById_WhenUserExists_ShouldReturnUser()
+    {
+        // Arrange
+        var service = CreateService();
+        var expectedUser = new User { Id = 1, Forename = "Existing", Surname = "User", Email = "existing@example.com", DateOfBirth = DateTime.Now.AddYears(-30), IsActive = true };
+        _dataContext.Setup(dc => dc.GetAll<User>()).Returns(new[] { expectedUser }.AsQueryable());
+
+        // Act
+        var result = service.GetById(1);
+
+        // Assert
+        result.Should().BeEquivalentTo(expectedUser);
+    }
+
+    [Fact]
+    public void GetById_WhenUserDoesNotExist_ShouldThrowUserNotFoundException()
+    {
+        // Arrange
+        var service = CreateService();
+        _dataContext.Setup(dc => dc.GetAll<User>()).Returns(new User[] { }.AsQueryable());
+
+        // Act & Assert
+        service.Invoking(s => s.GetById(1))
+            .Should().Throw<UserNotFoundException>()
+            .WithMessage("User with ID 1 not found.");
+    }
+
+
+    [Fact]
+    public void Update_WhenValidUser_ShouldCallDataContextUpdate()
+    {
+        // Arrange
+        var service = CreateService();
+        var user = new User { Id = 1, Forename = "Updated", Surname = "User", Email = "updated@example.com", DateOfBirth = DateTime.Now.AddYears(-35), IsActive = false };
+
+        // Act
+        service.Update(user);
+
+        // Assert
+        _dataContext.Verify(dc => dc.Update(It.Is<User>(u => u.Id == user.Id && u.Email == user.Email)), Times.Once);
+    }
+
+    [Fact]
+    public void Delete_WhenUserExists_ShouldCallDataContextDelete()
+    {
+        // Arrange
+        var service = CreateService();
+        var user = new User { Id = 1, Forename = "To Delete", Surname = "User", Email = "todelete@example.com", DateOfBirth = DateTime.Now.AddYears(-40), IsActive = true };
+        _dataContext.Setup(dc => dc.GetAll<User>()).Returns(new[] { user }.AsQueryable());
+
+        // Act
+        service.Delete(1);
+
+        // Assert
+        _dataContext.Verify(dc => dc.Delete(It.Is<User>(u => u.Id == user.Id)), Times.Once);
+    }
+
+    [Fact]
+    public void Delete_WhenUserDoesNotExist_ShouldThrowUserNotFoundException()
+    {
+        // Arrange
+        var service = CreateService();
+        _dataContext.Setup(dc => dc.GetAll<User>()).Returns(new User[] { }.AsQueryable());
+
+        // Act & Assert
+        service.Invoking(s => s.Delete(1))
+            .Should().Throw<UserNotFoundException>()
+            .WithMessage("User with ID 1 not found.");
+    }
+
 
 
     private readonly Mock<IDataContext> _dataContext = new();

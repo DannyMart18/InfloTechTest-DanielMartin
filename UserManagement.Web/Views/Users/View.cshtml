@@ -1,0 +1,28 @@
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model UserManagement.Web.Models.Users.UserViewModel
+
+<h2>User Details</h2>
+
+<div>
+    <dl class="row">
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.Forename)</dt>
+        <dd class="col-sm-10">@Model.Forename</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.Surname)</dt>
+        <dd class="col-sm-10">@Model.Surname</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.Email)</dt>
+        <dd class="col-sm-10">@Model.Email</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.DateOfBirth)</dt>
+        <dd class="col-sm-10">@Model.DateOfBirth.ToShortDateString()</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.IsActive)</dt>
+        <dd class="col-sm-10">@(Model.IsActive ? "Yes" : "No")</dd>
+    </dl>
+</div>
+
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
+    <a asp-action="List" class="btn btn-secondary">Back to List</a>
+</div>
