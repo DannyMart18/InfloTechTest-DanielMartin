@@ -2,6 +2,16 @@
 
 <h2>User List</h2>
 
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
 <div class="table-responsive">
     <table class="table table-striped">
         <thead>
@@ -43,9 +53,9 @@
                         Actions
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="btnToggleActions">
-                        <li><a class="dropdown-item" href="#">View</a></li>
-                        <li><a class="dropdown-item" href="#">Edit</a></li>
-                        <li><a class="dropdown-item" href="#">Delete</a></li>
+                        <li><a class="dropdown-item" asp-action="View" asp-route-id="@item.Id">View</a></li>
+                        <li><a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Id">Edit</a></li>
+                        <li><a class="dropdown-item" asp-action="Delete" asp-route-id="@item.Id">Delete</a></li>
                     </ul>
                 </div>
             </td>
@@ -62,7 +72,7 @@
         <a asp-controller="Users" asp-action="List" asp-route-filter="inactive" class="btn btn-default @(Model.ActiveFilter == "inactive" ? "active" : "")">Non Active</a>
     </div>
 
-    <a href="#" class="btn btn-primary float-end">
+    <a asp-action="Create" class="btn btn-primary float-end">
         Add User
     </a>
 </div>
