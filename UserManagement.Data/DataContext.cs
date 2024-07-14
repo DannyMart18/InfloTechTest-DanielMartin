@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using UserManagement.Models;
@@ -7,6 +8,9 @@ namespace UserManagement.Data;
 
 public class DataContext : DbContext, IDataContext
 {
+    private readonly List<User> _users = new();
+    private readonly List<Log> _logs = new();
+    private long _nextLogId = 1;
     public DataContext() => Database.EnsureCreated();
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
@@ -49,5 +53,23 @@ public class DataContext : DbContext, IDataContext
     {
         base.Remove(entity);
         SaveChanges();
+    }
+
+
+    public void CreateLog(Log log)
+    {
+        log.Id = _nextLogId++;
+        log.Timestamp = DateTime.UtcNow;
+        _logs.Add(log);
+    }
+
+    public IQueryable<Log> GetLogsForUser(long userId)
+    {
+        return _logs.Where(l => l.UserId == userId).AsQueryable();
+    }
+
+    public IQueryable<Log> GetAllLogs()
+    {
+        return _logs.AsQueryable();
     }
 }
