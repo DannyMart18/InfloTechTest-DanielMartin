@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UserManagement.Models;
 using UserManagement.Services.Domain.Implementations;
@@ -220,6 +221,79 @@ public class UserServiceTests
         service.Invoking(s => s.Delete(1))
             .Should().Throw<UserNotFoundException>()
             .WithMessage("User with ID 1 not found.");
+    }
+
+    [Fact]
+    public void CreateLog_ShouldAddLogSuccessfully()
+    {
+        // Arrange
+        var userService = new UserService(_dataContext.Object);
+        var userId = 1;
+        var action = "TestAction";
+        var details = "Test details";
+
+        // Act
+        userService.CreateLog(userId, action, details);
+
+        // Assert
+        _dataContext.Verify(d => d.CreateLog(It.Is<Log>(l =>
+            l.UserId == userId &&
+            l.Action == action &&
+            l.Details == details)), Times.Once);
+    }
+
+    [Fact]
+    public void GetLogsForUser_ShouldReturnUserLogs()
+    {
+        // Arrange
+        var userService = new UserService(_dataContext.Object);
+        var userId = 1;
+        var logs = new List<Log>
+        {
+            new Log { UserId = userId, Action = "Action1", Details = "Details1" },
+            new Log { UserId = userId, Action = "Action2", Details = "Details2" }
+        };
+        _dataContext.Setup(d => d.GetLogsForUser(userId)).Returns(logs.AsQueryable());
+
+        // Act
+        var result = userService.GetLogsForUser(userId);
+
+        // Assert
+        result.Should().BeEquivalentTo(logs);
+    }
+
+    [Fact]
+    public void GetAllLogs_ShouldReturnAllLogs()
+    {
+        // Arrange
+        var userService = new UserService(_dataContext.Object);
+        var logs = new List<Log>
+        {
+            new Log { UserId = 1, Action = "Action1", Details = "Details1" },
+            new Log { UserId = 2, Action = "Action2", Details = "Details2" }
+        };
+        _dataContext.Setup(d => d.GetAllLogs()).Returns(logs.AsQueryable());
+
+        // Act
+        var result = userService.GetAllLogs();
+
+        // Assert
+        result.Should().BeEquivalentTo(logs);
+    }
+
+    [Fact]
+    public void GetLogsForUser_NonExistentUser_ShouldReturnEmptyList()
+    {
+        // Arrange
+        var userService = new UserService(_dataContext.Object);
+        var nonExistentUserId = 999;
+        _dataContext.Setup(d => d.GetLogsForUser(nonExistentUserId)).Returns(new List<Log>().AsQueryable());
+
+        // Act
+        var result = userService.GetLogsForUser(nonExistentUserId);
+
+        // Assert
+        result.Should().BeEmpty();
     }
 
 

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using UserManagement.Models;
 
 namespace UserManagement.Data;
 
@@ -29,4 +30,13 @@ public interface IDataContext
     void Update<TEntity>(TEntity entity) where TEntity : class;
 
     void Delete<TEntity>(TEntity entity) where TEntity : class;
+
+    // New method for creating logs
+    void CreateLog(Log log);
+
+    // New method for getting logs for a specific user
+    IQueryable<Log> GetLogsForUser(long userId);
+
+    // New method for getting all logs
+    IQueryable<Log> GetAllLogs();
 }
