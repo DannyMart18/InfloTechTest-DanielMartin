@@ -16,4 +16,8 @@ public interface IUserService
     void Create(User user);
     void Update(User user);
     void Delete(long id);
+
+    void CreateLog(long userId, string action, string details);
+    IEnumerable<Log> GetLogsForUser(long userId);
+    IEnumerable<Log> GetAllLogs();
 }

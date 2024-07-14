@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using UserManagement.Data.Pagination;
 using UserManagement.Models;
 using UserManagement.Services.Domain.Interfaces;
 using UserManagement.Services.Exceptions;
@@ -194,5 +195,34 @@ public class UsersController : Controller
             TempData["ErrorMessage"] = "An error occurred while deleting the user.";
         }
         return RedirectToAction(nameof(List));
+    }
+
+    [HttpGet("logs/{id}")]
+    public IActionResult UserLogs(long id)
+    {
+        var user = _userService.GetById(id);
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        var logs = _userService.GetLogsForUser(id);
+        var viewModel = new UserLogsViewModel
+        {
+            UserId = id,
+            UserName = $"{user.Forename} {user.Surname}",
+            Logs = logs.ToList()
+        };
+
+        return View(viewModel);
+    }
+
+    [HttpGet("logs")]
+    public IActionResult AllLogs(int pageNumber = 1)
+    {
+        int pageSize = 10; // You can adjust this or make it a parameter
+        var logs = _userService.GetAllLogs();
+        var paginatedLogs = PaginatedList<Log>.Create(logs.AsQueryable(), pageNumber, pageSize);
+        return View(paginatedLogs);
     }
 }

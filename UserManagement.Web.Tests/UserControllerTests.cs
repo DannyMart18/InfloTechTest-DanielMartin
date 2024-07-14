@@ -26,7 +26,8 @@ public class UserControllerTests
         // Assert
         var viewResult = result.Should().BeOfType<ViewResult>().Subject;
         var model = viewResult.Model.Should().BeOfType<UserListViewModel>().Subject;
-        model.Items.Should().BeEquivalentTo(users);
+        model.Items.Should().BeEquivalentTo(users, options => options
+            .Excluding(u => u.Logs)); // Exclude Logs from comparison
         model.ActiveFilter.Should().Be("all");
     }
 
@@ -45,7 +46,8 @@ public class UserControllerTests
         // Assert
         var viewResult = result.Should().BeOfType<ViewResult>().Subject;
         var model = viewResult.Model.Should().BeOfType<UserListViewModel>().Subject;
-        model.Items.Should().BeEquivalentTo(users);
+        model.Items.Should().BeEquivalentTo(users, options => options
+            .Excluding(u => u.Logs)); // Exclude Logs from comparison
         model.ActiveFilter.Should().Be(filter);
     }
 
@@ -62,7 +64,8 @@ public class UserControllerTests
         // Assert
         var viewResult = result.Should().BeOfType<ViewResult>().Subject;
         var model = viewResult.Model.Should().BeOfType<UserListViewModel>().Subject;
-        model.Items.Should().BeEquivalentTo(allUsers);
+        model.Items.Should().BeEquivalentTo(allUsers, options => options
+            .Excluding(u => u.Logs)); // Exclude Logs from comparison
         model.ActiveFilter.Should().Be("all");
     }
 
@@ -220,7 +223,8 @@ public class UserControllerTests
         // Assert
         var viewResult = result.Should().BeOfType<ViewResult>().Subject;
         var model = viewResult.Model.Should().BeOfType<UserViewModel>().Subject;
-        model.Should().BeEquivalentTo(user);
+        model.Should().BeEquivalentTo(user, options => options
+            .Excluding(u => u.Logs)); // Exclude Logs from comparison
     }
 
     [Fact]
